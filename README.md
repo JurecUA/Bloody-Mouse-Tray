@@ -1,78 +1,39 @@
 # Bloody Mouse Tray
 
-Индикатор заряда и частоты опроса для беспроводной мыши **Bloody SG5 Pro (8K)** в системном трее Windows 11.
+**English** | [Русский](README.ru.md)
 
-**Репозиторий:** [JurecUA/Bloody-Mouse-Tray](https://github.com/JurecUA/Bloody-Mouse-Tray)  
-Форк / доработка на базе [Fan4Metal/mouse_tray](https://github.com/Fan4Metal/mouse_tray); оставлена поддержка только этой мыши
-(донгл `1956:3069`, по кабелю `1956:3144`). Bloody Central запущенным держать не нужно.
+Battery level and polling rate indicator for the **Bloody SG5 Pro (8K)** wireless mouse in the Windows 11 system tray.
 
-## Что умеет
+**Repository:** [JurecUA/Bloody-Mouse-Tray](https://github.com/JurecUA/Bloody-Mouse-Tray)  
+Fork / modification based on [Fan4Metal/mouse_tray](https://github.com/Fan4Metal/mouse_tray); support is kept exclusively for this mouse model
+(dongle `1956:3069`, cable `1956:3144`). Bloody Central does not need to be kept running.
 
-- **Заряд в трее** цифрами или значком батареи, при зарядке значок анимируется. Мышь читается раз в `Poll interval`
-  (по умолчанию 60 с); раз в секунду только если мышь спит или не найдена. Клик по значку и наведение курсора читают
-  мышь сразу.
-- **Наведение курсора на значок** показывает частоту опроса в цвете индикатора на самой мышке, после ухода курсора
-  возвращается заряд. Подписи: `125`, `250`, `500`, `1K`, `2K`, `4K`, `8K`.
+## Features
 
-  | Частота | Цвет | | Частота | Цвет |
+- **Tray Battery Level:** Displayed as numbers or a battery icon. The icon animates while charging. The mouse is queried every `Poll interval`
+  (60 seconds by default); only once per second if the mouse is asleep or not found. Clicking or hovering over the icon reads the mouse immediately.
+- **Mouse Hover:** Hovering over the icon displays the current polling rate colored according to the mouse's built-in LED indicator scheme. The charge level returns once the cursor leaves. Labels: `125`, `250`, `500`, `1K`, `2K`, `4K`, `8K`.
+
+  | Rate | Color | | Rate | Color |
   |---|---|---|---|---|
-  | 125 | фиолетовый | | 2000 | зелёный |
-  | 250 | серый (на самой мышке такого режима нет) | | 4000 | жёлтый |
-  | 500 | бирюзовый | | 8000 | синий |
-  | 1000 | белый | | | |
+  | 125 | purple | | 2000 | green |
+  | 250 | gray (not present on the actual mouse) | | 4000 | yellow |
+  | 500 | turquoise | | 8000 | blue |
+  | 1000 | white | | | |
 
-  Цвета взяты из страницы «Report Rate Adjustable» инструкции мыши, значения RGB приблизительные (`RATE_COLORS` в
-  `mouse_tray/config.py`). Значок частоты подчиняется настройке **Text outline**; без обводки белый 1000 Гц на светлой
-  панели задач не виден.
-- **Тултип:** имя мыши, время с последней полной зарядки, частота и DPI. Процент в тултипе показывается только в режиме
-  «значок батареи» (там цифр на значке нет).
-- **Таймер полной зарядки** стартует, когда заряд дошёл до 100%, в том числе если мышь заряжалась при выключенном
-  компьютере: программа помнит последний увиденный уровень и при запуске замечает скачок до 100%. В этом случае время
-  отсчитывается от первого опроса после включения. Ложные 100% сразу после отключения кабеля посреди зарядки (особенность
-  прошивки) игнорируются. Меню значка (правый клик) нарисовано в том же тёмном стиле, что и настройки: **Reset timer** обнуляет таймер вручную, затем Settings, About, Exit.
-- **Кабель и донгл одновременно:** при подключённом кабеле сначала спрашивается проводная мышь, донгл остаётся запасным
-  вариантом (донгл при кабеле отвечает «нет связи»).
-- **Портативность:** настройки, дата полной зарядки и последний уровень заряда лежат в `mouse_tray.json` рядом с
-  программой. Лог (`logs\app.log`) пишется только при включённой настройке **Debug logging**; выключена, файл и папка не
-  создаются (предупреждения идут только в консоль, если она есть). `AppData` программа не использует; в реестр пишет только
-  необязательный автозапуск (см. ниже), а читает из него системный список шрифтов для настроек.
-- **Автозапуск:** галочка **Start with Windows** в настройках добавляет значение в
-  `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (на текущий путь программы). Если папку с программой перенесли,
-  нажми OK в настройках с отмеченной галочкой: путь обновится. Кнопка Reset to defaults автозапуск не трогает.
+  Colors are taken from the "Report Rate Adjustable" section of the manual; RGB values are approximate (`RATE_COLORS` in
+  `mouse_tray/config.py`). The rate icon respects the **Text outline** setting; without an outline, white 1000Hz is invisible on a light taskbar.
+- **Tooltip:** Mouse name, time since last full charge, polling rate, and DPI. The percentage is only shown in "battery icon" mode (since there are no numbers on the icon itself).
+- **Full Charge Timer:** Starts when the charge reaches 100%, including cases where the mouse charged while the computer was off: the program remembers the last seen level and detects a jump to 100% upon startup. In this case, time is counted from the first poll after boot. False 100% readings immediately after unplugging the cable mid-charge (a firmware quirk) are ignored. The tray menu (right-click) shares the same dark styling as the settings: **Reset timer** clears the timer manually, followed by Settings, About, and Exit.
+- **Cable and Dongle Simultaneously:** When the cable is connected, the wired mouse is queried first; the dongle remains as a backup option (the dongle reports "no connection" while plugged into a cable).
+- **Portability:** Settings, full charge date, and last battery level are stored in `mouse_tray.json` next to the application. Logs (`logs\app.log`) are only written when **Debug logging** is enabled; if disabled, neither the file nor the folder is created (warnings go to the console only, if available). The program does not use `AppData`; it only writes an optional startup entry to the registry (see below) and reads the system font list for settings.
+- **Autostart:** The **Start with Windows** checkbox in settings adds an entry to
+  `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (pointing to the current executable path). If you move the program folder, click OK in settings with the checkbox checked to update the path. The **Reset to defaults** button does not affect autostart.
 
-## Запуск из исходников
+## Running from Source
 
-Нужен 64-битный Windows 11 и Python 3.11+ (в проекте закреплён 3.14).
+Requires 64-bit Windows 11 and Python 3.11+ (Python 3.14 pinned in the project).
 
 ```powershell
 uv sync
 uv run python main.py
-```
-
-Без uv: `pip install hidapi pillow wxpython`, затем `python main.py`. Лог: настройка **Debug logging** или переменная
-`MOUSE_TRAY_DEBUG=1`.
-
-## Сборка exe
-
-```powershell
-uv run --extra build python tools/make_release.py
-```
-
-Результат: папка `dist\mouse_tray\` с `mouse_tray.exe`; копируй её целиком. Рядом с exe появится `mouse_tray.json` (и `logs\`, если включить Debug logging). Пересборка очищает `dist\mouse_tray`, поэтому сохрани `mouse_tray.json`, если нужны настройки. Папка должна быть
-доступна для записи (не `C:\Program Files`), иначе настройки не сохранятся.
-
-## Тесты
-
-```powershell
-python -m unittest discover -s tests -t .
-```
-
-Тесты идут без мыши и без wxPython, на заглушках: разбор ответов мыши, выбор между кабелем и донглом, таймер полной
-зарядки, хранилище, логика наведения. Реальную работу wxPython и железа они не проверяют. Папку `tests` можно удалить,
-на работу программы это не влияет.
-
-## Протокол
-
-Описан в `mouse_tray/drivers/vendor/bloody.py`: получен из USB-снимка, предоставленного JurecUA в
-[issue #5 оригинального проекта](https://github.com/Fan4Metal/mouse_tray/issues/5). Другие Bloody (VID `0x09DA`)
-используют иной протокол и не поддерживаются.
