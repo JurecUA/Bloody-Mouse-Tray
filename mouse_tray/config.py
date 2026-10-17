@@ -103,19 +103,19 @@ class Config:
 
     poll_rate: int = 60
     fast_poll_rate: int = 1
-    foreground_color: tuple[int, int, int] = BLUE
-    dynamic_color: bool = False
-    mid_color: tuple[int, int, int] = YELLOW
-    low_color: tuple[int, int, int] = RED
+    foreground_color: tuple[int, int, int] = (255, 255, 255)
+    dynamic_color: bool = True
+    mid_color: tuple[int, int, int] = (255, 255, 79)
+    low_color: tuple[int, int, int] = (255, 43, 43)
     battery_icon: bool = False
     background_color: tuple[int, int, int, int] = (0, 0, 0, 0)
-    font: str = "consola.ttf"
+    font: str = r"C:\WINDOWS\Fonts\calibri.ttf"
     text_size: int = TEXT_SIZE_DEFAULT
-    text_outline: bool = True
+    text_outline: bool = False
     dark_theme: bool = True
     display_name: str = "Bloody Mouse Tray"
     debug: bool = False
-    language: str = "en"
+    language: str = "ru"
 
     def charge_color(self, percent: int) -> tuple[int, int, int]:
         """Color for a battery ``percent`` when ``dynamic_color`` is on.
