@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 #: Application version, shown in the settings and about dialogs. Single source
 #: for the runtime version (re-exported as ``mouse_tray.__version__``).
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 #: Project identity, shown in the about dialog. Kept here with VERSION so the
 #: dialog has a single source for everything it prints about the app itself.
