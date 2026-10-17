@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 
 #: Application version, shown in the settings and about dialogs. Single source
 #: for the runtime version (re-exported as ``mouse_tray.__version__``).
@@ -22,6 +23,9 @@ UPSTREAM = "https://github.com/Fan4Metal/mouse_tray"
 #: Author, stamped into the exe's version resource (CompanyName and
 #: LegalCopyright) by tools/make_release.py.
 AUTHOR = "JurecUA"
+
+#: Default face chosen by the user; derive the path from Windows so non-C: installs work.
+DEFAULT_FONT = os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "Fonts", "calibri.ttf")
 
 #: Colors of the report-rate icon, matching the mouse's own rate indicator LED
 #: (colors read off the manual's "Report Rate Adjustable" page; the RGB values
@@ -103,19 +107,19 @@ class Config:
 
     poll_rate: int = 60
     fast_poll_rate: int = 1
-    foreground_color: tuple[int, int, int] = BLUE
-    dynamic_color: bool = False
-    mid_color: tuple[int, int, int] = YELLOW
-    low_color: tuple[int, int, int] = RED
+    foreground_color: tuple[int, int, int] = (255, 255, 255)
+    dynamic_color: bool = True
+    mid_color: tuple[int, int, int] = (255, 255, 79)
+    low_color: tuple[int, int, int] = (255, 43, 43)
     battery_icon: bool = False
     background_color: tuple[int, int, int, int] = (0, 0, 0, 0)
-    font: str = "consola.ttf"
+    font: str = DEFAULT_FONT
     text_size: int = TEXT_SIZE_DEFAULT
-    text_outline: bool = True
+    text_outline: bool = False
     dark_theme: bool = True
     display_name: str = "Bloody Mouse Tray"
     debug: bool = False
-    language: str = "en"
+    language: str = "ru"
 
     def charge_color(self, percent: int) -> tuple[int, int, int]:
         """Color for a battery ``percent`` when ``dynamic_color`` is on.
