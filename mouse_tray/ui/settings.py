@@ -173,21 +173,11 @@ class _SettingsDialog(wx.Dialog):
         super().__init__(parent, title=f"{config.display_name} {tr('settings', language)}")
         self._config = config
         self._language = language
+        self._info = info
         self.SetIcon(wx.Icon(icon_path("app.ico")))
-        self.SetBackgroundColour(w.BG)
-        w.use_dark_titlebar(self)
         self._preview = preview
         self._all_faces, self._mono_faces, self._face_to_path, self._path_to_face = _collect_faces()
-
-        pad = self.FromDIP(14)
-        outer = wx.BoxSizer(wx.VERTICAL)
-        outer.Add(w.BatteryCard(self, info, self._language), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
-        outer.Add(self._build_appearance(config), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
-        outer.Add(self._build_system(config), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
-        outer.Add(self._build_footer(), 0, wx.EXPAND | wx.ALL, pad)
-        outer.SetMinSize(wx.Size(self.FromDIP(470), -1))
-        self.SetSizerAndFit(outer)
-        self.SetMinSize(self.GetSize())
+        self._build_dialog(config)
         self.CentreOnScreen()
 
         self._restore_font_selection(config)
@@ -197,6 +187,21 @@ class _SettingsDialog(wx.Dialog):
         # Validate the chosen font before the OK button closes the dialog.
         self.Bind(wx.EVT_BUTTON, self._on_ok, id=wx.ID_OK)
         self.Bind(wx.EVT_CHAR_HOOK, self._on_key)
+
+    def _build_dialog(self, config: Config) -> None:
+        """Build the translated controls for the current language."""
+        self.SetTitle(f"{config.display_name} {tr('settings', self._language)}")
+        self.SetBackgroundColour(w.BG)
+        w.use_dark_titlebar(self)
+        pad = self.FromDIP(14)
+        outer = wx.BoxSizer(wx.VERTICAL)
+        outer.Add(w.BatteryCard(self, self._info, self._language), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
+        outer.Add(self._build_appearance(config), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
+        outer.Add(self._build_system(config), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
+        outer.Add(self._build_footer(), 0, wx.EXPAND | wx.ALL, pad)
+        outer.SetMinSize(wx.Size(self.FromDIP(560), -1))
+        self.SetSizerAndFit(outer)
+        self.SetMinSize(wx.Size(self.FromDIP(560), -1))
 
     # --- building blocks ----------------------------------------------------
 
@@ -325,6 +330,7 @@ class _SettingsDialog(wx.Dialog):
         )
         self._language_names = list(LANGUAGES)
         language.SetStringSelection(tr(LANGUAGES[self._language], self._language))
+        language.Bind(wx.EVT_COMBOBOX, self._on_language_selected)
         self._language_picker = language
         self._row(card, sizer, tr("Language", self._language), "", language)
         # Not part of Config: Windows' own Run entry is the source of truth. The
@@ -352,18 +358,22 @@ class _SettingsDialog(wx.Dialog):
 
     def _build_footer(self) -> wx.Sizer:
         reset = w.FlatButton(self, tr("Defaults", self._language))
+        reset.SetInitialSize(wx.Size(self.FromDIP(148), self.FromDIP(32)))
         reset.Bind(wx.EVT_BUTTON, self._on_reset)
         show_log = w.FlatButton(self, tr("Open log", self._language))
+        show_log.SetInitialSize(wx.Size(self.FromDIP(140), self.FromDIP(32)))
         show_log.SetToolTip(tr("Open log (exists only after Debug logging was on).", self._language))
         show_log.Bind(wx.EVT_BUTTON, self._on_open_log)
         footer = wx.BoxSizer(wx.HORIZONTAL)
         footer.Add(reset, 0)
-        footer.Add(show_log, 0, wx.LEFT, self.FromDIP(8))
+        footer.Add(show_log, 0, wx.LEFT, self.FromDIP(12))
         footer.AddStretchSpacer()
-        footer.Add(w.FlatButton(self, tr("Cancel", self._language), button_id=wx.ID_CANCEL), 0)
-        footer.Add(
-            w.FlatButton(self, tr("OK", self._language), "primary", wx.ID_OK), 0, wx.LEFT, self.FromDIP(8)
-        )
+        cancel = w.FlatButton(self, tr("Cancel", self._language), button_id=wx.ID_CANCEL)
+        cancel.SetInitialSize(wx.Size(self.FromDIP(104), self.FromDIP(32)))
+        footer.Add(cancel, 0)
+        ok = w.FlatButton(self, tr("OK", self._language), "primary", wx.ID_OK)
+        ok.SetInitialSize(wx.Size(self.FromDIP(104), self.FromDIP(32)))
+        footer.Add(ok, 0, wx.LEFT, self.FromDIP(12))
         return footer
 
     # --- font list ----------------------------------------------------------
@@ -407,6 +417,31 @@ class _SettingsDialog(wx.Dialog):
         self.Refresh()
 
     # --- events -------------------------------------------------------------
+
+    def _on_language_selected(self, _evt: wx.CommandEvent) -> None:
+        selected = self._language_picker.GetStringSelection()
+        language = next(
+            (code for code in self._language_names if tr(LANGUAGES[code], self._language) == selected), None
+        )
+        if language is not None and language != self._language:
+            # The dropdown lives in a transient popup. Rebuild after the popup
+            # closes so its event handler never touches a destroyed control.
+            wx.CallAfter(self._switch_language, language)
+
+    def _switch_language(self, language: str) -> None:
+        """Recreate the dialog in the chosen language without losing edits."""
+        draft = Config()
+        self.apply_to(draft)
+        draft.language = language
+        center = self.GetScreenPosition() + wx.Point(self.GetSize().width // 2, self.GetSize().height // 2)
+
+        self.SetSizer(None, True)
+        self.DestroyChildren()
+        self._language = language
+        self._build_dialog(draft)
+        self._restore_font_selection(draft)
+        self._update_bands()
+        self.SetPosition(center - wx.Point(self.GetSize().width // 2, self.GetSize().height // 2))
 
     def _on_font_selected(self, evt: wx.CommandEvent) -> None:
         self._emit_font_preview()
