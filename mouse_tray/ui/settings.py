@@ -27,6 +27,7 @@ from PIL import ImageFont
 from .. import autostart
 from ..config import LOW_THRESHOLD, MID_THRESHOLD, TEXT_SIZE_MAX, TEXT_SIZE_MIN, Config
 from ..logging_setup import log_exists, open_log
+from ..i18n import LANGUAGES, tr
 from ..resources import icon_path
 from . import widgets as w
 from .info import BatteryInfo
@@ -168,7 +169,10 @@ def _rgb(picker: w.Swatch) -> tuple[int, int, int]:
 
 class _SettingsDialog(wx.Dialog):
     def __init__(self, parent: wx.Window, config: Config, preview: PreviewHooks, info: BatteryInfo):
-        super().__init__(parent, title=f"{config.display_name} settings")
+        language = config.language if config.language in LANGUAGES else "en"
+        super().__init__(parent, title=f"{config.display_name} {tr('settings', language)}")
+        self._config = config
+        self._language = language
         self.SetIcon(wx.Icon(icon_path("app.ico")))
         self.SetBackgroundColour(w.BG)
         w.use_dark_titlebar(self)
@@ -177,7 +181,7 @@ class _SettingsDialog(wx.Dialog):
 
         pad = self.FromDIP(14)
         outer = wx.BoxSizer(wx.VERTICAL)
-        outer.Add(w.BatteryCard(self, info), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
+        outer.Add(w.BatteryCard(self, info, self._language), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
         outer.Add(self._build_appearance(config), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
         outer.Add(self._build_system(config), 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, pad)
         outer.Add(self._build_footer(), 0, wx.EXPAND | wx.ALL, pad)
@@ -238,33 +242,37 @@ class _SettingsDialog(wx.Dialog):
         return toggle
 
     def _build_appearance(self, config: Config) -> w.Card:
-        card, sizer = self._card("Appearance")
+        card, sizer = self._card(tr("Appearance", self._language))
         # Order: theme → indicator style → outline → charge colours → size → font.
         self._dark_theme = self._toggle_row(
-            card, sizer, "Dark theme", "Settings and About dialogs", config.dark_theme,
-            "Dark Fluent look for the settings and about windows.\n"
+            card, sizer,
+            tr("Dark theme", self._language), tr("Settings and About dialogs", self._language), config.dark_theme,
+            tr("Dark Fluent look for the settings and about windows.\n"
             "Turn off for a light palette. Switches this dialog live;\n"
-            "saved when you press OK.",
+            "saved when you press OK.", self._language),
         )
         self._dark_theme.Bind(wx.EVT_CHECKBOX, self._on_dark_theme)
         self._battery_icon = self._toggle_row(
-            card, sizer, "Battery icon", "Glyph instead of digits", config.battery_icon,
-            "Draw a battery filled to the charge level instead of\n"
+            card, sizer,
+            tr("Battery icon", self._language), tr("Glyph instead of digits", self._language), config.battery_icon,
+            tr("Draw a battery filled to the charge level instead of\n"
             "the percent digits. The exact number moves to the\n"
-            "tray tooltip.",
+            "tray tooltip.", self._language),
         )
         self._battery_icon.Bind(wx.EVT_CHECKBOX, self._on_battery_icon)
         self._text_outline = self._toggle_row(
-            card, sizer, "Text outline", "Keeps digits readable", config.text_outline,
-            "Draw a contrasting outline around the tray digits and\n"
-            "the report-rate icon. Keeps them readable on a same-colored taskbar.",
+            card, sizer,
+            tr("Text outline", self._language), tr("Keeps digits readable", self._language), config.text_outline,
+            tr("Draw a contrasting outline around the tray digits and\n"
+            "the report-rate icon. Keeps them readable on a same-colored taskbar.", self._language),
         )
         self._text_outline.Bind(wx.EVT_CHECKBOX, self._on_outline)
         self._dynamic_color = self._toggle_row(
-            card, sizer, "Color by charge level", "Yellow and red when low", config.dynamic_color,
-            "Color the battery percent by charge: the font color\n"
-            f"above {MID_THRESHOLD}%, then the two colors picked next to it\n"
-            f"at \u2264 {MID_THRESHOLD}% and \u2264 {LOW_THRESHOLD}%.",
+            card, sizer,
+            tr("Color by charge level", self._language), tr("Yellow and red when low", self._language), config.dynamic_color,
+            tr("Color the battery percent by charge: font color above {mid}%, "
+               "then the two picked colors at ≤ {mid}% and ≤ {low}%.",
+               self._language, mid=MID_THRESHOLD, low=LOW_THRESHOLD),
         )
         self._dynamic_color.Bind(wx.EVT_CHECKBOX, self._on_dynamic_color)
 
@@ -275,7 +283,7 @@ class _SettingsDialog(wx.Dialog):
         # the top band -- and only show up while "Color by charge level" is on.
         self._band_widgets: list[wx.Window] = [self._mid_color, self._low_color]
         self._row(
-            card, sizer, "Colors", f"Normal, \u2264 {MID_THRESHOLD}%, \u2264 {LOW_THRESHOLD}%",
+            card, sizer, tr("Colors", self._language), f"{tr('Normal', self._language)}, \u2264 {MID_THRESHOLD}%, \u2264 {LOW_THRESHOLD}%",
             self._color, self._mid_color, self._low_color,
         )
 
@@ -287,21 +295,20 @@ class _SettingsDialog(wx.Dialog):
         self._size_label.SetMinSize(wx.Size(self._size_label.GetTextExtent(f"{TEXT_SIZE_MAX}%").width, -1))
         self._size.Bind(wx.EVT_SLIDER, self._on_size_changed)
         self._row(
-            card, sizer, "Text size", "Digits in the tray icon", self._size, self._size_label,
-            tip="Scale the tray digits.\n100% fills the icon; lower values shrink.",
+            card, sizer, tr("Text size", self._language), tr("Digits in the tray icon", self._language), self._size, self._size_label,
+            tip=tr("Scale the tray digits.\n100% fills the icon; lower values shrink.", self._language),
         )
 
         self._font = w.Dropdown(card, list(self._all_faces), width=self.FromDIP(150))
         self._font.Bind(wx.EVT_COMBOBOX, self._on_font_selected)
-        self._all_fonts = w.Chip(card, "All fonts", False)
-        self._all_fonts.SetToolTip(
+        self._all_fonts = w.Chip(card, tr("All fonts", self._language), False)
+        self._all_fonts.SetToolTip(tr(
             "List every installed font, not just monospaced ones.\n"
-            "The digits are measured in the chosen face, so any font fits."
-        )
+            "The digits are measured in the chosen face, so any font fits.", self._language))
         self._all_fonts.Bind(wx.EVT_CHECKBOX, self._on_all_fonts)
-        self._font_caption = w.text(card, "Monospaced", muted=True, small=True)
+        self._font_caption = w.text(card, tr("Monospaced", self._language), muted=True, small=True)
         font_left = wx.BoxSizer(wx.VERTICAL)
-        font_left.Add(w.text(card, "Font"), 0)
+        font_left.Add(w.text(card, tr("Font", self._language)), 0)
         font_left.Add(self._font_caption, 0)
         font_row = wx.BoxSizer(wx.HORIZONTAL)
         font_row.Add(font_left, 1, wx.ALIGN_CENTER_VERTICAL)
@@ -311,37 +318,52 @@ class _SettingsDialog(wx.Dialog):
         return card
 
     def _build_system(self, config: Config) -> w.Card:
-        card, sizer = self._card("System")
+        card, sizer = self._card(tr("System", self._language))
+        language = w.Dropdown(
+            card, [tr(name, self._language) for name in LANGUAGES.values()],
+            width=self.FromDIP(130), preview_faces=False,
+        )
+        self._language_names = list(LANGUAGES)
+        language.SetStringSelection(tr(LANGUAGES[self._language], self._language))
+        self._language_picker = language
+        self._row(card, sizer, tr("Language", self._language), "", language)
         # Not part of Config: Windows' own Run entry is the source of truth. The
         # reset button leaves it alone -- it is not a look-and-feel default.
         self._autostart_was = autostart.is_enabled()
         self._autostart = self._toggle_row(
-            card, sizer, "Start with Windows", "Run at sign-in", self._autostart_was,
-            "Run the program when you sign in to Windows. Stored as a Run value\n"
+            card, sizer,
+            tr("Start with Windows", self._language), tr("Run at sign-in", self._language), self._autostart_was,
+            tr("Run the program when you sign in to Windows. Stored as a Run value\n"
             "for the current user that points at this copy of the program;\n"
-            "press OK with the switch on after moving the folder to refresh it.",
+            "press OK with the switch on after moving the folder to refresh it.", self._language),
         )
         self._poll = w.Stepper(card, int(config.poll_rate))
-        self._row(card, sizer, "Poll interval", "Seconds between reads", self._poll)
+        self._row(
+            card, sizer, tr("Poll interval", self._language), tr("Seconds between reads", self._language), self._poll
+        )
         self._debug = self._toggle_row(
-            card, sizer, "Debug logging", "Write logs/app.log next to the program", config.debug,
-            "Off by default: no log file is written at all.\n"
+            card, sizer,
+            tr("Debug logging", self._language), tr("Write logs/app.log next to the program", self._language), config.debug,
+            tr("Off by default: no log file is written at all.\n"
             "Turn it on, press OK, and attach the file when reporting a problem.",
+            self._language),
         )
         return card
 
     def _build_footer(self) -> wx.Sizer:
-        reset = w.FlatButton(self, "Defaults")
+        reset = w.FlatButton(self, tr("Defaults", self._language))
         reset.Bind(wx.EVT_BUTTON, self._on_reset)
-        show_log = w.FlatButton(self, "Open log")
-        show_log.SetToolTip("Open logs/app.log (exists only after Debug logging was on).")
+        show_log = w.FlatButton(self, tr("Open log", self._language))
+        show_log.SetToolTip(tr("Open log (exists only after Debug logging was on).", self._language))
         show_log.Bind(wx.EVT_BUTTON, self._on_open_log)
         footer = wx.BoxSizer(wx.HORIZONTAL)
         footer.Add(reset, 0)
         footer.Add(show_log, 0, wx.LEFT, self.FromDIP(8))
         footer.AddStretchSpacer()
-        footer.Add(w.FlatButton(self, "Cancel", button_id=wx.ID_CANCEL), 0)
-        footer.Add(w.FlatButton(self, "OK", "primary", wx.ID_OK), 0, wx.LEFT, self.FromDIP(8))
+        footer.Add(w.FlatButton(self, tr("Cancel", self._language), button_id=wx.ID_CANCEL), 0)
+        footer.Add(
+            w.FlatButton(self, tr("OK", self._language), "primary", wx.ID_OK), 0, wx.LEFT, self.FromDIP(8)
+        )
         return footer
 
     # --- font list ----------------------------------------------------------
@@ -372,7 +394,7 @@ class _SettingsDialog(wx.Dialog):
             self._font.SetStringSelection(keep)
         else:
             self._font.clear_selection()  # the old pick is not in this list
-        self._font_caption.SetLabel("All fonts" if show_all else "Monospaced")
+        self._font_caption.SetLabel(tr("All fonts" if show_all else "Monospaced", self._language))
 
     def _update_bands(self) -> None:
         """Show the low-band swatches only while "Color by charge level" is on."""
@@ -463,9 +485,10 @@ class _SettingsDialog(wx.Dialog):
             open_log()
             return
         wx.MessageBox(
-            "There is no log yet: it is written only while Debug logging is on.\n"
+            tr("There is no log yet: it is written only while Debug logging is on.\n"
             "Turn it on, press OK and use the program for a while.",
-            "Open log",
+            self._language),
+            tr("Open log", self._language),
             wx.OK | wx.ICON_INFORMATION,
             self,
         )
@@ -508,8 +531,8 @@ class _SettingsDialog(wx.Dialog):
                 ImageFont.truetype(self._face_to_path[face], 16)
             except OSError:
                 wx.MessageBox(
-                    f"Could not load font {face!r}.\nPlease choose another.",
-                    "Invalid font",
+                    tr("Could not load font {face!r}.\nPlease choose another.", self._language, face=face),
+                    tr("Invalid font", self._language),
                     wx.OK | wx.ICON_ERROR,
                     self,
                 )
@@ -527,8 +550,8 @@ class _SettingsDialog(wx.Dialog):
             autostart.set_enabled(wanted)  # on: also refreshes a stale path
         except OSError as exc:
             wx.MessageBox(
-                f"Could not change the autostart setting:\n{exc}",
-                "Start with Windows",
+                tr("Could not change the autostart setting:\n{error}", self._language, error=exc),
+                tr("Start with Windows", self._language),
                 wx.OK | wx.ICON_ERROR,
                 self,
             )
@@ -538,6 +561,10 @@ class _SettingsDialog(wx.Dialog):
     # --- result -------------------------------------------------------------
 
     def apply_to(self, config: Config) -> None:
+        selected = self._language_picker.GetStringSelection()
+        config.language = next(
+            (code for code in self._language_names if tr(LANGUAGES[code], self._language) == selected), "en"
+        )
         config.poll_rate = self._poll.GetValue()
         face = self._font.GetStringSelection()
         if face:
@@ -551,3 +578,4 @@ class _SettingsDialog(wx.Dialog):
         config.battery_icon = self._battery_icon.GetValue()
         config.dark_theme = self._dark_theme.GetValue()
         config.debug = self._debug.GetValue()
+
