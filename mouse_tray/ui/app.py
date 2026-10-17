@@ -22,6 +22,7 @@ from wx.adv import NotificationMessage
 from ..battery import BatteryStatus
 from ..config import GREEN, LOW_THRESHOLD, MID_THRESHOLD, VERSION, Config
 from ..config import config as default_config
+from ..i18n import tr
 from ..drivers import detect_all_drivers
 from ..logging_setup import setup_logging
 from ..polling import is_new_full_charge, rate_color, rate_label
@@ -44,23 +45,23 @@ _HOVER_REPOLL_S = 3  # at most one extra mouse read per this many seconds of hov
 _NO_MOUSE = "No Mouse Detected"
 
 
-def format_timedelta(delta: timedelta) -> str:
+def format_timedelta(delta: timedelta, language: str = "en") -> str:
     """Format a duration like ``"1 days, 23:59:59"``."""
     days = delta.days
     seconds = int(delta.total_seconds()) - days * 86400
     hours, remainder = divmod(seconds, 3600)
     minutes, secs = divmod(remainder, 60)
-    return f"{days} days, {hours:02d}:{minutes:02d}:{secs:02d}"
+    return f"{days}{tr(' days, ', language)}{hours:02d}:{minutes:02d}:{secs:02d}"
 
 
-def format_ago(delta: timedelta) -> str:
+def format_ago(delta: timedelta, language: str = "en") -> str:
     """Short age like ``"3 d ago"``, ``"5 h ago"``, ``"12 min ago"`` (for the settings card)."""
     minutes = max(0, int(delta.total_seconds() // 60))
     if minutes >= 1440:
-        return f"{minutes // 1440} d ago"
+        return f"{minutes // 1440}{tr(' d ago', language)}"
     if minutes >= 60:
-        return f"{minutes // 60} h ago"
-    return f"{minutes} min ago" if minutes else "just now"
+        return f"{minutes // 60}{tr(' h ago', language)}"
+    return f"{minutes}{tr(' min ago', language)}" if minutes else tr("just now", language)
 
 
 def format_settings(status: BatteryStatus) -> str:
@@ -143,10 +144,13 @@ class TrayApp(wx.Frame):
             on_about=self._open_about,
             on_exit=self._exit,
             dark_theme=config.dark_theme,
+            language=config.language,
         )
         self.tray.update(self.icons.text_icon(" "), config.display_name)
 
-        self.notification = NotificationMessage(title=config.display_name, message="Charged 100%")
+        self.notification = NotificationMessage(
+            title=config.display_name, message=tr("Charged 100%", config.language)
+        )
         self.notification.SetFlags(wx.ICON_INFORMATION)
         self.notification.UseTaskBarIcon(self.tray)
 
@@ -224,7 +228,7 @@ class TrayApp(wx.Frame):
         if not status.present:
             self._stop_animation()
             self._was_full = False
-            self._show(self.icons.text_icon("-"), _NO_MOUSE)
+            self._show(self.icons.text_icon("-"), tr(_NO_MOUSE, self.config.language))
             return
 
         tooltip = self._tooltip(name, status)
@@ -328,11 +332,11 @@ class TrayApp(wx.Frame):
         glyph mode the icon shows a fill level and this line is the only place
         the exact number appears, so it stays there.
         """
-        lines = [name or _NO_MOUSE]
+        lines = [name or tr(_NO_MOUSE, self.config.language)]
         if self._battery_icon_mode() and status.percent is not None:
             lines.append(f"{status.percent}%")
         if self.full_charge_date:
-            lines.append(format_timedelta(datetime.now() - self.full_charge_date))
+            lines.append(format_timedelta(datetime.now() - self.full_charge_date, self.config.language))
         settings = format_settings(status)
         if settings:
             lines.append(settings)
@@ -544,6 +548,7 @@ class TrayApp(wx.Frame):
 
         w.apply_theme(self.config.dark_theme)
         self.tray.set_dark_theme(self.config.dark_theme)
+        self.tray.set_language(self.config.language)
         save_settings(self.config)
         setup_logging(self.config.debug)
         self._repaint()  # show the applied settings instantly
@@ -553,12 +558,15 @@ class TrayApp(wx.Frame):
         """What the settings dialog's battery card shows, from the last reading."""
         status = self._last_status
         if status is None or not status.present:
-            return BatteryInfo(None, "No Mouse Detected", "")
+            return BatteryInfo(None, tr("No Mouse Detected", self.config.language), "")
         headline = " \u00b7 ".join(part for part in (self._last_name, format_settings(status)) if part)
         if status.charging:
-            detail = "Charging"
+            detail = tr("Charging", self.config.language)
         elif self.full_charge_date:
-            detail = f"Full {format_ago(datetime.now() - self.full_charge_date)}"
+            detail = tr(
+                "Full {age}", self.config.language,
+                age=format_ago(datetime.now() - self.full_charge_date, self.config.language),
+            )
         else:
             detail = ""
         return BatteryInfo(status.percent, headline, detail)
@@ -605,3 +613,4 @@ def run(config: Config | None = None) -> None:
         ctypes.windll.shcore.SetProcessDpiAwareness(2)
     app = _App(cfg)
     app.MainLoop()
+
