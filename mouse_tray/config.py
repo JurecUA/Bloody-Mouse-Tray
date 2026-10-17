@@ -115,6 +115,7 @@ class Config:
     dark_theme: bool = True
     display_name: str = "Bloody Mouse Tray"
     debug: bool = False
+    language: str = "en"
 
     def charge_color(self, percent: int) -> tuple[int, int, int]:
         """Color for a battery ``percent`` when ``dynamic_color`` is on.
@@ -136,3 +137,4 @@ class Config:
 
 # Default instance used across the app. Replace fields here to retune.
 config = Config()
+
