@@ -11,6 +11,7 @@ import wx
 import wx.adv
 
 from ..config import DESCRIPTION, HOMEPAGE, UPSTREAM, VERSION, Config
+from ..i18n import tr
 from ..drivers import all_drivers
 from ..resources import icon_path
 from . import widgets as w
@@ -63,7 +64,8 @@ def supported_devices() -> list[str]:
 
 class _AboutDialog(wx.Dialog):
     def __init__(self, parent: wx.Window, config: Config):
-        super().__init__(parent, title=f"About {config.display_name}")
+        super().__init__(parent, title=f"{tr('About', config.language)} {config.display_name}")
+        self._config = config
         self.SetIcon(wx.Icon(icon_path("app.ico")))
         self.SetBackgroundColour(w.BG)
         w.use_dark_titlebar(self)
@@ -94,7 +96,7 @@ class _AboutDialog(wx.Dialog):
         font.SetPointSize(font.GetPointSize() + 2)
         title.SetFont(font)
 
-        description = w.text(card, DESCRIPTION, muted=True)
+        description = w.text(card, tr(DESCRIPTION, config.language), muted=True)
         description.Wrap(self.FromDIP(360))
 
         def _link(label: str, url: str) -> wx.adv.HyperlinkCtrl:
@@ -109,7 +111,9 @@ class _AboutDialog(wx.Dialog):
         column.Add(title, 0)
         column.Add(description, 0, wx.TOP, self.FromDIP(6))
         column.Add(_link("JurecUA/Bloody-Mouse-Tray (GitHub)", HOMEPAGE), 0, wx.TOP, self.FromDIP(8))
-        column.Add(_link("Based on Fan4Metal/mouse_tray", UPSTREAM), 0, wx.TOP, self.FromDIP(4))
+        column.Add(
+            _link(tr("Based on Fan4Metal/mouse_tray", config.language), UPSTREAM), 0, wx.TOP, self.FromDIP(4)
+        )
         sizer.Add(column, 1, wx.EXPAND | wx.TOP | wx.RIGHT | wx.BOTTOM, pad)
         return card
 
@@ -119,12 +123,12 @@ class _AboutDialog(wx.Dialog):
         card.SetSizer(sizer)
         pad = self.FromDIP(14)
 
-        features = w.text(card, _FEATURES)
+        features = w.text(card, tr(_FEATURES, self._config.language))
         features.Wrap(self.FromDIP(_TEXT_WIDTH))
         sizer.Add(features, 0, wx.LEFT | wx.RIGHT | wx.TOP, pad)
 
         devices = supported_devices()
-        title = "Supported device:" if len(devices) == 1 else "Supported devices:"
+        title = tr("Supported device:" if len(devices) == 1 else "Supported devices:", self._config.language)
         sizer.Add(w.text(card, title, bold=True), 0, wx.LEFT | wx.RIGHT | wx.TOP, pad)
         for line in devices:
             sizer.Add(w.text(card, line, muted=True, small=True), 0, wx.LEFT | wx.RIGHT | wx.TOP, self.FromDIP(4))
@@ -134,7 +138,7 @@ class _AboutDialog(wx.Dialog):
     def _footer(self) -> wx.Sizer:
         footer = wx.BoxSizer(wx.HORIZONTAL)
         footer.AddStretchSpacer()
-        footer.Add(w.FlatButton(self, "OK", "primary", wx.ID_OK), 0)
+        footer.Add(w.FlatButton(self, tr("OK", self._config.language), "primary", wx.ID_OK), 0)
         return footer
 
     def _on_key(self, evt: wx.KeyEvent) -> None:
@@ -142,3 +146,4 @@ class _AboutDialog(wx.Dialog):
             self.EndModal(wx.ID_OK)
         else:
             evt.Skip()
+
