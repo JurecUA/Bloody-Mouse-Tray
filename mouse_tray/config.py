@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import os
 
 #: Application version, shown in the settings and about dialogs. Single source
 #: for the runtime version (re-exported as ``mouse_tray.__version__``).
@@ -22,6 +23,9 @@ UPSTREAM = "https://github.com/Fan4Metal/mouse_tray"
 #: Author, stamped into the exe's version resource (CompanyName and
 #: LegalCopyright) by tools/make_release.py.
 AUTHOR = "JurecUA"
+
+#: Default face chosen by the user; derive the path from Windows so non-C: installs work.
+DEFAULT_FONT = os.path.join(os.environ.get("WINDIR", r"C:\Windows"), "Fonts", "calibri.ttf")
 
 #: Colors of the report-rate icon, matching the mouse's own rate indicator LED
 #: (colors read off the manual's "Report Rate Adjustable" page; the RGB values
@@ -109,7 +113,7 @@ class Config:
     low_color: tuple[int, int, int] = (255, 43, 43)
     battery_icon: bool = False
     background_color: tuple[int, int, int, int] = (0, 0, 0, 0)
-    font: str = r"C:\WINDOWS\Fonts\calibri.ttf"
+    font: str = DEFAULT_FONT
     text_size: int = TEXT_SIZE_DEFAULT
     text_outline: bool = False
     dark_theme: bool = True
