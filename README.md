@@ -1,7 +1,9 @@
 # Bloody Mouse Tray
 
 Индикатор заряда и частоты опроса для беспроводной мыши **Bloody SG5 Pro (8K)** в системном трее Windows 11.
-Форк [Fan4Metal/mouse_tray](https://github.com/Fan4Metal/mouse_tray), оставлена поддержка только этой мыши
+
+**Репозиторий:** [JurecUA/Bloody-Mouse-Tray](https://github.com/JurecUA/Bloody-Mouse-Tray)  
+Форк / доработка на базе [Fan4Metal/mouse_tray](https://github.com/Fan4Metal/mouse_tray); оставлена поддержка только этой мыши
 (донгл `1956:3069`, по кабелю `1956:3144`). Bloody Central запущенным держать не нужно.
 
 ## Что умеет

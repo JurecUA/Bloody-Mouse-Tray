@@ -10,7 +10,7 @@ from __future__ import annotations
 import wx
 import wx.adv
 
-from ..config import DESCRIPTION, HOMEPAGE, VERSION, Config
+from ..config import DESCRIPTION, HOMEPAGE, UPSTREAM, VERSION, Config
 from ..drivers import all_drivers
 from ..resources import icon_path
 from . import widgets as w
@@ -97,16 +97,19 @@ class _AboutDialog(wx.Dialog):
         description = w.text(card, DESCRIPTION, muted=True)
         description.Wrap(self.FromDIP(360))
 
-        link = wx.adv.HyperlinkCtrl(card, label="Based on Fan4Metal/mouse_tray (GitHub)", url=HOMEPAGE)
-        link.SetBackgroundColour(w.CARD)
-        link.SetNormalColour(w.ACCENT)
-        link.SetHoverColour(w.ACCENT)
-        link.SetVisitedColour(w.ACCENT)
+        def _link(label: str, url: str) -> wx.adv.HyperlinkCtrl:
+            ctrl = wx.adv.HyperlinkCtrl(card, label=label, url=url)
+            ctrl.SetBackgroundColour(w.CARD)
+            ctrl.SetNormalColour(w.ACCENT)
+            ctrl.SetHoverColour(w.ACCENT)
+            ctrl.SetVisitedColour(w.ACCENT)
+            return ctrl
 
         column = wx.BoxSizer(wx.VERTICAL)
         column.Add(title, 0)
         column.Add(description, 0, wx.TOP, self.FromDIP(6))
-        column.Add(link, 0, wx.TOP, self.FromDIP(8))
+        column.Add(_link("JurecUA/Bloody-Mouse-Tray (GitHub)", HOMEPAGE), 0, wx.TOP, self.FromDIP(8))
+        column.Add(_link("Based on Fan4Metal/mouse_tray", UPSTREAM), 0, wx.TOP, self.FromDIP(4))
         sizer.Add(column, 1, wx.EXPAND | wx.TOP | wx.RIGHT | wx.BOTTOM, pad)
         return card
 

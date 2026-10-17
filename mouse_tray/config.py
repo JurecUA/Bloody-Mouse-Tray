@@ -14,11 +14,14 @@ DESCRIPTION = (
     "Battery and report-rate indicator for the Bloody SG5 Pro (8K) wireless mouse "
     "in the Windows system tray. Portable: settings live next to the program."
 )
-HOMEPAGE = "https://github.com/Fan4Metal/mouse_tray"
+#: This project's GitHub page (About dialog, docs).
+HOMEPAGE = "https://github.com/JurecUA/Bloody-Mouse-Tray"
+#: Upstream project this is based on (About dialog credit link).
+UPSTREAM = "https://github.com/Fan4Metal/mouse_tray"
 
 #: Author, stamped into the exe's version resource (CompanyName and
 #: LegalCopyright) by tools/make_release.py.
-AUTHOR = "Fan4_Metal"
+AUTHOR = "JurecUA"
 
 #: Colors of the report-rate icon, matching the mouse's own rate indicator LED
 #: (colors read off the manual's "Report Rate Adjustable" page; the RGB values
