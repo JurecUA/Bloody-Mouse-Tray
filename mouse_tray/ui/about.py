@@ -80,6 +80,9 @@ class _AboutDialog(wx.Dialog):
         self.SetMinSize(self.GetSize())
         self.CentreOnScreen()
         self.Bind(wx.EVT_CHAR_HOOK, self._on_key)
+        # HyperlinkCtrl otherwise receives the dialog's initial focus and draws
+        # a dotted outline before the user interacts with anything.
+        wx.CallAfter(self._ok_button.SetFocus)
 
     def _header_card(self, config: Config) -> w.Card:
         card = w.Card(self)
@@ -105,6 +108,7 @@ class _AboutDialog(wx.Dialog):
             ctrl.SetNormalColour(w.ACCENT)
             ctrl.SetHoverColour(w.ACCENT)
             ctrl.SetVisitedColour(w.ACCENT)
+            ctrl.SetCanFocus(False)
             return ctrl
 
         column = wx.BoxSizer(wx.VERTICAL)
@@ -131,14 +135,15 @@ class _AboutDialog(wx.Dialog):
         title = tr("Supported device:" if len(devices) == 1 else "Supported devices:", self._config.language)
         sizer.Add(w.text(card, title, bold=True), 0, wx.LEFT | wx.RIGHT | wx.TOP, pad)
         for line in devices:
-            sizer.Add(w.text(card, line, muted=True, small=True), 0, wx.LEFT | wx.RIGHT | wx.TOP, self.FromDIP(4))
+            sizer.Add(w.text(card, line, muted=True, small=True), 0, wx.LEFT | wx.RIGHT | wx.TOP, pad)
         sizer.AddSpacer(pad)
         return card
 
     def _footer(self) -> wx.Sizer:
         footer = wx.BoxSizer(wx.HORIZONTAL)
         footer.AddStretchSpacer()
-        footer.Add(w.FlatButton(self, tr("OK", self._config.language), "primary", wx.ID_OK), 0)
+        self._ok_button = w.FlatButton(self, tr("OK", self._config.language), "primary", wx.ID_OK)
+        footer.Add(self._ok_button, 0)
         return footer
 
     def _on_key(self, evt: wx.KeyEvent) -> None:
