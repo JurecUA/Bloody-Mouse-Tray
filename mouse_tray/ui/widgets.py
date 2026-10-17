@@ -745,9 +745,10 @@ class Card(wx.Panel):
 class BatteryCard(_Painted):
     """Top card: charge bar with percent, a mouse glyph and two info lines."""
 
-    def __init__(self, parent: wx.Window, info: BatteryInfo):
+    def __init__(self, parent: wx.Window, info: BatteryInfo, language: str = "en"):
         super().__init__(parent, (400, 96), on_dialog_bg=True)
         self._info = info
+        self._language = language
 
     def draw(self, gc: wx.GraphicsContext, width: int, height: int) -> None:
         pad = self.FromDIP(14)
@@ -756,7 +757,8 @@ class BatteryCard(_Painted):
         gc.DrawRoundedRectangle(0.5, 0.5, width - 1, height - 1, self.FromDIP(_CARD_RADIUS))
         base = self.GetFont()
         gc.SetFont(base.Bold(), TEXT)
-        gc.DrawText("Battery", pad, self.FromDIP(10))
+        from ..i18n import tr
+        gc.DrawText(tr("Battery", self._language), pad, self.FromDIP(10))
 
         percent = self._info.percent
         bar_y, bar_h = self.FromDIP(40), self.FromDIP(8)
@@ -924,3 +926,4 @@ class TrayMenu(wx.PopupTransientWindow):
             extent = gc.GetTextExtent(entry[0])
             gc.SetFont(self.GetFont(), TEXT)
             gc.DrawText(entry[0], rect.x + self.FromDIP(12), rect.y + (rect.height - extent[1]) / 2)
+
