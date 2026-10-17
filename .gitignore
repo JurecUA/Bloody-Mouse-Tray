@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[oc]
+*.egg-info
+
+# Build output
+build/
+dist/
+*.spec
+
+# Virtual environment
+.venv
+
+# Runtime files written next to the program (portable settings and logs)
+mouse_tray.json
+mouse_tray.json.*
+logs/
