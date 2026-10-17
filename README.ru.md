@@ -1,6 +1,6 @@
 # Bloody Mouse Tray
 
-[English](README.md) | **Русский**
+[English](README.md) | **Русский** | [Українська](README.uk.md)
 
 Индикатор уровня заряда и частоты опроса для беспроводной мыши **Bloody SG5 Pro (8K)** в системном трее Windows 11.
 
@@ -39,4 +39,5 @@
 ```powershell
 uv sync
 uv run python main.py
+```
 

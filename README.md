@@ -1,6 +1,6 @@
 # Bloody Mouse Tray
 
-**English** | [Русский](README.ru.md)
+**English** | [Русский](README.ru.md) | [Українська](README.uk.md)
 
 Battery level and polling rate indicator for the **Bloody SG5 Pro (8K)** wireless mouse in the Windows 11 system tray.
 
@@ -39,4 +39,5 @@ Requires 64-bit Windows 11 and Python 3.11+ (Python 3.14 pinned in the project).
 ```powershell
 uv sync
 uv run python main.py
+```
 
