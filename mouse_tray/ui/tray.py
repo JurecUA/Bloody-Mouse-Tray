@@ -7,6 +7,7 @@ from typing import Any
 
 import wx
 from wx.adv import TaskBarIcon
+from ..i18n import tr
 
 
 class TrayIcon(TaskBarIcon):
@@ -30,11 +31,13 @@ class TrayIcon(TaskBarIcon):
         on_about: Callable[[], None],
         on_exit: Callable[[], None],
         dark_theme: bool = True,
+        language: str = "en",
     ):
         super().__init__()
         self._parent = parent
         self._menu: Any = None
         self._dark_theme = dark_theme
+        self._language = language
         self._on_left_click = on_left_click
         self._on_hover = on_hover
         self._on_reset_timer = on_reset_timer
@@ -52,6 +55,9 @@ class TrayIcon(TaskBarIcon):
         """Keep the tray menu palette in sync with the settings choice."""
         self._dark_theme = dark
 
+    def set_language(self, language: str) -> None:
+        self._language = language
+
     def _show_menu(self) -> None:
         """Open the themed context menu at the cursor (one at a time)."""
         # Deferred: widgets.py is only needed for the painted menu / dialogs.
@@ -68,11 +74,11 @@ class TrayIcon(TaskBarIcon):
         self._menu = w.TrayMenu(
             self._parent,
             [
-                ("Reset timer", self._on_reset_timer),
-                ("Settings...", self._on_settings),
-                ("About...", self._on_about),
+                (tr("Reset timer", self._language), self._on_reset_timer),
+                (tr("Settings...", self._language), self._on_settings),
+                (tr("About...", self._language), self._on_about),
                 None,
-                ("Exit", self._on_exit),
+                (tr("Exit", self._language), self._on_exit),
             ],
             on_closed=self._menu_closed,
         )
@@ -92,3 +98,4 @@ class TrayIcon(TaskBarIcon):
     def update(self, icon: wx.Icon, tooltip: str) -> None:
         """Set the tray icon and hover tooltip (safe to call from any thread)."""
         wx.CallAfter(self.SetIcon, icon, tooltip)
+
