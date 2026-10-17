@@ -1,6 +1,6 @@
 [project]
 name = "bloody-mouse-tray"
-version = "1.0.0"
+version = "1.1.0"
 description = "Battery and report-rate indicator for the Bloody SG5 Pro (8K) in the Windows system tray"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -62,3 +62,4 @@ ignore = [
 #     an I/O hiccup, so broad excepts and quiet passes are the intended shape.
 #   DTZ -- the full-charge timestamps are local wall-clock by design: they are
 #     shown to the user and stored in that form.
+
