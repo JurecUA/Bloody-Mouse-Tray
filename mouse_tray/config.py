@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 #: Application version, shown in the settings and about dialogs. Single source
 #: for the runtime version (re-exported as ``mouse_tray.__version__``).
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 #: Project identity, shown in the about dialog. Kept here with VERSION so the
 #: dialog has a single source for everything it prints about the app itself.
@@ -115,6 +115,7 @@ class Config:
     dark_theme: bool = True
     display_name: str = "Bloody Mouse Tray"
     debug: bool = False
+    language: str = "en"
 
     def charge_color(self, percent: int) -> tuple[int, int, int]:
         """Color for a battery ``percent`` when ``dynamic_color`` is on.
@@ -136,3 +137,4 @@ class Config:
 
 # Default instance used across the app. Replace fields here to retune.
 config = Config()
+

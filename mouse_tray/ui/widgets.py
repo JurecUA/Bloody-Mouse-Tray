@@ -236,12 +236,6 @@ class _Painted(wx.Control):
     def draw(self, gc: wx.GraphicsContext, width: int, height: int) -> None:  # pragma: no cover - overridden
         raise NotImplementedError
 
-    def _focus_ring(self, gc: wx.GraphicsContext, width: int, height: int, radius: float) -> None:
-        if self.HasFocus():
-            gc.SetPen(wx.Pen(ACCENT, 1))
-            gc.SetBrush(wx.TRANSPARENT_BRUSH)
-            gc.DrawRoundedRectangle(0.5, 0.5, width - 1, height - 1, radius)
-
     def _draw_text(  # noqa: PLR0913, PLR0917 -- a drawing helper, every argument is a coordinate or style
         self, gc: wx.GraphicsContext, label: str, x: float, width: float, height: float,
         colour: wx.Colour = TEXT, font: wx.Font | None = None, align: str = "left",
@@ -376,7 +370,6 @@ class Slider(_Painted):
         thumb = self.FromDIP(16)
         gc.SetBrush(wx.Brush(ACCENT))
         gc.DrawEllipse(pad + span * ratio - thumb / 2, mid - thumb / 2, thumb, thumb)
-        self._focus_ring(gc, width, height, 6)
 
 
 class FlatButton(_Painted):
@@ -437,8 +430,12 @@ class FlatButton(_Painted):
             gc.SetBrush(wx.Brush(FIELD_HOT if self._hover else FIELD))
         gc.DrawRoundedRectangle(0.5, 0.5, width - 1, height - 1, 6)
         font = self.GetFont().Bold() if self._variant == "primary" else self.GetFont()
+        while font.GetPointSize() > 7:
+            gc.SetFont(font, text_colour)
+            if gc.GetTextExtent(self._label)[0] <= width - self.FromDIP(16):
+                break
+            font = font.Smaller()
         self._draw_text(gc, self._label, 0, width, height, text_colour, font, "center")
-        self._focus_ring(gc, width, height, 6)
 
 
 class Chip(_Painted):
@@ -477,7 +474,6 @@ class Chip(_Painted):
         gc.DrawRoundedRectangle(0.5, 0.5, width - 1, height - 1, 6)
         font = self.GetFont().Smaller()
         self._draw_text(gc, self._label, 0, width, height, ACCENT if self._value else MUTED, font, "center")
-        self._focus_ring(gc, width, height, 6)
 
 
 class Swatch(_Painted):
@@ -532,7 +528,6 @@ class Swatch(_Painted):
         gc.SetPen(wx.Pen(ACCENT if self._hover else FIELD_LINE, 1))
         gc.SetBrush(wx.Brush(self._colour))
         gc.DrawRoundedRectangle(0.5, 0.5, width - 1, height - 1, 5)
-        self._focus_ring(gc, width, height, 5)
 
 
 class Stepper(_Painted):
@@ -589,7 +584,6 @@ class Stepper(_Painted):
         self._draw_text(gc, "\u2212", 0, third, height, MUTED, align="center")
         self._draw_text(gc, "+", width - third, third, height, MUTED, align="center")
         self._draw_text(gc, f"{self._value} s", third, third, height, TEXT, align="center")
-        self._focus_ring(gc, width, height, 6)
 
 
 class _ItemList(wx.VListBox):
@@ -717,7 +711,6 @@ class Dropdown(_Painted):
         path.AddLineToPoint(x, y + 2)
         path.AddLineToPoint(x + 4, y - 2)
         gc.StrokePath(path)
-        self._focus_ring(gc, width, height, 6)
 
 
 class Card(wx.Panel):
@@ -745,9 +738,10 @@ class Card(wx.Panel):
 class BatteryCard(_Painted):
     """Top card: charge bar with percent, a mouse glyph and two info lines."""
 
-    def __init__(self, parent: wx.Window, info: BatteryInfo):
+    def __init__(self, parent: wx.Window, info: BatteryInfo, language: str = "en"):
         super().__init__(parent, (400, 96), on_dialog_bg=True)
         self._info = info
+        self._language = language
 
     def draw(self, gc: wx.GraphicsContext, width: int, height: int) -> None:
         pad = self.FromDIP(14)
@@ -756,7 +750,8 @@ class BatteryCard(_Painted):
         gc.DrawRoundedRectangle(0.5, 0.5, width - 1, height - 1, self.FromDIP(_CARD_RADIUS))
         base = self.GetFont()
         gc.SetFont(base.Bold(), TEXT)
-        gc.DrawText("Battery", pad, self.FromDIP(10))
+        from ..i18n import tr
+        gc.DrawText(tr("Battery", self._language), pad, self.FromDIP(10))
 
         percent = self._info.percent
         bar_y, bar_h = self.FromDIP(40), self.FromDIP(8)
@@ -924,3 +919,4 @@ class TrayMenu(wx.PopupTransientWindow):
             extent = gc.GetTextExtent(entry[0])
             gc.SetFont(self.GetFont(), TEXT)
             gc.DrawText(entry[0], rect.x + self.FromDIP(12), rect.y + (rect.height - extent[1]) / 2)
+

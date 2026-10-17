@@ -158,6 +158,7 @@ def save_settings(config: Config) -> None:
             "battery_icon": bool(config.battery_icon),
             "dark_theme": bool(config.dark_theme),
             "debug": bool(config.debug),
+            "language": config.language,
         }
         _save(data)
 
@@ -188,6 +189,11 @@ def load_settings(config: Config) -> None:
         if isinstance(saved.get(field), bool):
             setattr(config, field, saved[field])
 
+    language = saved.get("language")
+    if isinstance(language, str) and language in {"en", "ru", "uk"}:
+        config.language = language
+
     for field in ("foreground_color", "mid_color", "low_color"):
         if (parsed := _color(saved.get(field))) is not None:
             setattr(config, field, parsed)
+

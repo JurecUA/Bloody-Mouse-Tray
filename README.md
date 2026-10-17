@@ -10,6 +10,8 @@ Fork / modification based on [Fan4Metal/mouse_tray](https://github.com/Fan4Metal
 
 ## Features
 
+- **Interface languages:** English, Russian, and Ukrainian. Choose a language in **Settings → System → Language**; the selection is saved with the other settings.
+
 - **Tray Battery Level:** Displayed as numbers or a battery icon. The icon animates while charging. The mouse is queried every `Poll interval`
   (60 seconds by default); only once per second if the mouse is asleep or not found. Clicking or hovering over the icon reads the mouse immediately.
 - **Mouse Hover:** Hovering over the icon displays the current polling rate colored according to the mouse's built-in LED indicator scheme. The charge level returns once the cursor leaves. Labels: `125`, `250`, `500`, `1K`, `2K`, `4K`, `8K`.
@@ -37,3 +39,4 @@ Requires 64-bit Windows 11 and Python 3.11+ (Python 3.14 pinned in the project).
 ```powershell
 uv sync
 uv run python main.py
+
