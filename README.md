@@ -12,7 +12,7 @@ Fork / modification based on [Fan4Metal/mouse_tray](https://github.com/Fan4Metal
 
 A lightweight native Windows edition is available in [`bloody-mouse-tray-light/`](bloody-mouse-tray-light/). It shows battery charge, polling rate, and DPI for the Bloody SG5 Pro in the system tray. The folder includes the Rust source, build instructions, a ready-to-run Windows executable, and portable default settings.
 
-## Features
+## Features of the original Python edition
 
 - **Tray Battery Level:** Displayed as numbers or a battery icon. The icon animates while charging. The mouse is queried every `Poll interval`
   (60 seconds by default); only once per second if the mouse is asleep or not found. Clicking or hovering over the icon reads the mouse immediately.
@@ -34,7 +34,7 @@ A lightweight native Windows edition is available in [`bloody-mouse-tray-light/`
 - **Autostart:** The **Start with Windows** checkbox in settings adds an entry to
   `HKCU\Software\Microsoft\Windows\CurrentVersion\Run` (pointing to the current executable path). If you move the program folder, click OK in settings with the checkbox checked to update the path. The **Reset to defaults** button does not affect autostart.
 
-## Running from Source
+## Running the original Python edition from source
 
 Requires 64-bit Windows 11 and Python 3.11+ (Python 3.14 pinned in the project).
 
