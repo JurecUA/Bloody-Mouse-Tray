@@ -8,6 +8,10 @@ Battery level and polling rate indicator for the **Bloody SG5 Pro (8K)** wireles
 Fork / modification based on [Fan4Metal/mouse_tray](https://github.com/Fan4Metal/mouse_tray); support is kept exclusively for this mouse model
 (dongle `1956:3069`, cable `1956:3144`). Bloody Central does not need to be kept running.
 
+## Bloody Mouse Tray Light (Rust)
+
+A lightweight native Windows edition is available in [`bloody-mouse-tray-light/`](bloody-mouse-tray-light/). It shows battery charge, polling rate, and DPI for the Bloody SG5 Pro in the system tray. The folder includes the Rust source, build instructions, a ready-to-run Windows executable, and portable default settings.
+
 ## Features
 
 - **Tray Battery Level:** Displayed as numbers or a battery icon. The icon animates while charging. The mouse is queried every `Poll interval`
